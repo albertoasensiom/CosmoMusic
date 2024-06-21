@@ -3,12 +3,16 @@ package com.mygdx.mygame;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.badlogic.gdx.utils.Array;
+import java.util.Iterator;
 
 public class GameScreen implements Screen {
     private SpriteBatch batch;
@@ -16,13 +20,19 @@ public class GameScreen implements Screen {
     private Texture playerTexture;
     private Texture specialTileTexture;
     private Texture specialTileTexture2;
+    private Texture enemyTexture;
     private OrthographicCamera camera;
     private Viewport viewport;
+    private BitmapFont font;
     private int playerX, playerY;
+    private int life;
+    private int stamina;
+    private float staminaRecoveryTimer;
+    private Array<Enemy> enemies; //To store enemies generated
     private final int CELL_SIZE = 32; // Size of each cell
     private final int WORLD_WIDTH = 13 * CELL_SIZE; // 13 columns
     private final int WORLD_HEIGHT = 20 * CELL_SIZE; // 20 rows
-    private final int PLAYER_SIZE = 16; // New size for the player
+    private final int PLAYER_SIZE = 20; // New size for the player
     private final int PLAYER_OFFSET = (CELL_SIZE - PLAYER_SIZE) / 2; // Offset to center the player in the tile
 
     // Positions for the player to move to, corresponding to each key
@@ -42,6 +52,25 @@ public class GameScreen implements Screen {
         {12, 0}  // 'k' -> 8th white tile C
     };
 
+    private void spawnEnemy() {
+        // Calculate the x-coordinate based on the center of each tile
+        float tileCenterX = CELL_SIZE; // Center of each tile
+        int columnIndex = (int) (Math.random() * 23); // Randomly select a column index
+        float x = columnIndex * CELL_SIZE + (CELL_SIZE / 2f) - (enemyTexture.getWidth() / 2f) + (CELL_SIZE / 2f);
+
+        // Speed parameters
+        float minSpeed = 3;   // Minimum speed (adjust as needed)
+        float maxSpeed = 8;   // Maximum speed (adjust as needed)
+        float speed = minSpeed + (float) (Math.random() * (maxSpeed - minSpeed));
+
+        enemies.add(new Enemy(enemyTexture, x, WORLD_HEIGHT, speed));
+    }
+
+
+
+
+
+
     @Override
     public void show() {
         camera = new OrthographicCamera();
@@ -49,33 +78,102 @@ public class GameScreen implements Screen {
         camera.position.set(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, 0); // Center the camera in the world
         camera.update();
         batch = new SpriteBatch();
-        
+        font = new BitmapFont();
+        font.setColor(Color.WHITE);
+        font.getData().setScale(1f); // Set font size
+
+        // Initialize life and stamina
+        life = 3;
+        stamina = 100;
+        staminaRecoveryTimer = 0;
+
         // Create the texture checking if they exist
         if (Gdx.files.internal("tile-background.png").exists() && 
             Gdx.files.internal("planet12.png").exists() && 
             Gdx.files.internal("white-tiles.png").exists() &&
-            Gdx.files.internal("black-tiles.png").exists()) {
+            Gdx.files.internal("black-tiles.png").exists() &&
+            Gdx.files.internal("enemy.png").exists()) {
             cellTexture = new Texture("tile-background.png"); 
             playerTexture = new Texture("planet12.png");
             specialTileTexture = new Texture("white-tiles.png");
             specialTileTexture2 = new Texture("black-tiles.png");
+            enemyTexture = new Texture("enemy.png");
         } else {
             throw new RuntimeException("One or more files do not exist in the assets");
         }
         
         playerX = 0;
         playerY = 0;
+
+        // Initialize enemies
+        enemies = new Array<>();
+        spawnEnemy();
+    }
+
+    private void updateEnemies(float delta) {
+        // Create a list to collect enemies that should be removed
+        Array<Enemy> enemiesToRemove = new Array<>();
+
+        // Update enemies and mark for removal if they are out of screen
+        for (Enemy enemy : enemies) {
+            enemy.update(delta);
+
+            // Check if enemy is out of screen
+            if (enemy.isOutOfScreen()) {
+                enemiesToRemove.add(enemy);
+            }
+        }
+
+        // Remove enemies that have fallen off the screen
+        enemies.removeAll(enemiesToRemove, true);
+
+        // Spawn new enemies periodically
+        if (Math.random() < 0.03) {
+            spawnEnemy();
+        }
     }
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT); // Clears the screen with the specified color.
-        camera.update(); // Updates the camera's matrices.
+        // Clear the screen with the specified color
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        batch.setProjectionMatrix(camera.combined); // Sets the projection matrix for rendering.
-        batch.begin(); // Starts a new batch for rendering.
+        // Update camera
+        camera.update();
 
-        // Draw the tiles
+        // Set batch to use camera's projection matrix
+        batch.setProjectionMatrix(camera.combined);
+
+        // Begin batch rendering
+        batch.begin();
+
+        // Draw tiles
+        drawTiles();
+
+        // Draw player
+        drawPlayer();
+
+        // Draw enemies
+        drawEnemies();
+
+        // Draw life and stamina counters
+        drawCounters();
+
+        // End batch rendering
+        batch.end();
+
+        // Handle user input
+        handleInput(delta);
+
+        // Update enemies logic and remove off-screen enemies
+        updateEnemies(delta);
+
+        // Recover stamina over time
+        recoverStamina(delta);
+    }
+
+    // Method to draw tiles based on their positions
+    private void drawTiles() {
         for (int row = 0; row < 20; row++) {
             for (int col = 0; col < 13; col++) {
                 // Check if we are at the bottom row and in a special column
@@ -91,16 +189,30 @@ public class GameScreen implements Screen {
                 }
             }
         }
-
-        // Draw the player with new size and centered in the tile
-        batch.draw(playerTexture, playerX * CELL_SIZE + PLAYER_OFFSET, playerY * CELL_SIZE + PLAYER_OFFSET, PLAYER_SIZE, PLAYER_SIZE);
-
-        batch.end(); // Ends the batch, flushing its contents to the GPU.
-
-        handleInput(); // Handles user input.
     }
 
-    private void handleInput() {
+    // Method to draw the player with new size and centered in the tile
+    private void drawPlayer() {
+        batch.draw(playerTexture, playerX * CELL_SIZE + PLAYER_OFFSET, playerY * CELL_SIZE + PLAYER_OFFSET, PLAYER_SIZE, PLAYER_SIZE);
+    }
+
+    // Method to draw enemies
+    private void drawEnemies() {
+        for (Enemy enemy : enemies) {
+            enemy.render(batch);
+        }
+    }
+
+    // Method to draw life and stamina counters
+    private void drawCounters() {
+        font.draw(batch, "Life: " + life, 10, WORLD_HEIGHT - 10);
+        font.draw(batch, "Stamina: " + stamina, WORLD_WIDTH - 100, WORLD_HEIGHT - 10);
+    }
+
+    private void handleInput(float delta) {
+        int oldPlayerX = playerX;
+        int oldPlayerY = playerY;
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.A)) moveTo(0);
         if (Gdx.input.isKeyJustPressed(Input.Keys.W)) moveTo(1);
         if (Gdx.input.isKeyJustPressed(Input.Keys.S)) moveTo(2);
@@ -114,11 +226,32 @@ public class GameScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.U)) moveTo(10);
         if (Gdx.input.isKeyJustPressed(Input.Keys.J)) moveTo(11);
         if (Gdx.input.isKeyJustPressed(Input.Keys.K)) moveTo(12);
+
+        // Calculate the distance moved and decrease stamina accordingly
+        int distanceX = Math.abs(playerX - oldPlayerX);
+        int distanceY = Math.abs(playerY - oldPlayerY);
+        int distance = distanceX + distanceY;
+
+        if (distance == 1) {
+            stamina = Math.max(0, stamina - 5);
+        } else if (distance == 2) {
+            stamina = Math.max(0, stamina - 10);
+        } else if (distance > 2) {
+            stamina = Math.max(0, stamina - 20);
+        }
     }
 
     private void moveTo(int index) {
         playerX = keyPositions[index][0];
         playerY = keyPositions[index][1];
+    }
+
+    private void recoverStamina(float delta) {
+        staminaRecoveryTimer += delta;
+        if (staminaRecoveryTimer >= 1) {
+            stamina = Math.min(100, stamina + 10);
+            staminaRecoveryTimer = 0;
+        }
     }
 
     @Override
@@ -142,5 +275,10 @@ public class GameScreen implements Screen {
         playerTexture.dispose();
         specialTileTexture.dispose();
         specialTileTexture2.dispose();
+        enemyTexture.dispose();
+        font.dispose();
+        for (Enemy enemy : enemies) {
+            enemy.dispose();
+        }
     }
 }
