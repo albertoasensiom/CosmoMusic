@@ -170,6 +170,8 @@ public class GameScreen implements Screen {
 
         // Recover stamina over time
         recoverStamina(delta);
+        
+     
     }
 
     // Method to draw tiles based on their positions
@@ -226,25 +228,29 @@ public class GameScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.U)) moveTo(10);
         if (Gdx.input.isKeyJustPressed(Input.Keys.J)) moveTo(11);
         if (Gdx.input.isKeyJustPressed(Input.Keys.K)) moveTo(12);
+    }
 
-        // Calculate the distance moved and decrease stamina accordingly
-        int distanceX = Math.abs(playerX - oldPlayerX);
-        int distanceY = Math.abs(playerY - oldPlayerY);
-        int distance = distanceX + distanceY;
+        private void moveTo(int index) {
+            int newPlayerX = keyPositions[index][0];
+            int newPlayerY = keyPositions[index][1];
 
-        if (distance == 1) {
-            stamina = Math.max(0, stamina - 5);
-        } else if (distance == 2) {
-            stamina = Math.max(0, stamina - 10);
-        } else if (distance > 2) {
-            stamina = Math.max(0, stamina - 20);
+            int distanceX = Math.abs(newPlayerX - playerX);
+
+            int requiredStamina = 0;
+            if (distanceX == 1) {
+                requiredStamina = 5;
+            } else if (distanceX == 2) {
+                requiredStamina = 10;
+            } else if (distanceX >= 3) {
+                requiredStamina = 20;
+            }
+
+            if (stamina >= requiredStamina) {
+                playerX = newPlayerX;
+                playerY = newPlayerY;
+                stamina = Math.max(0, stamina - requiredStamina);
+            }
         }
-    }
-
-    private void moveTo(int index) {
-        playerX = keyPositions[index][0];
-        playerY = keyPositions[index][1];
-    }
 
     private void recoverStamina(float delta) {
         staminaRecoveryTimer += delta;
@@ -253,6 +259,9 @@ public class GameScreen implements Screen {
             staminaRecoveryTimer = 0;
         }
     }
+    
+ // Method to handle collision between player and enemies
+   
 
     @Override
     public void resize(int width, int height) {

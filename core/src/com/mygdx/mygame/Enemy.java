@@ -29,12 +29,13 @@ public class Enemy {
         return y;
     }
 
-    public void dispose() {
-        texture.dispose();
-    }
-
     // Method to check if enemy is out of screen
     public boolean isOutOfScreen() {
         return y + TILE_SIZE < 0;
+    }
+    
+    
+    public void dispose() {
+        texture.dispose();
     }
 }
