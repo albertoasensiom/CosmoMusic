@@ -28,7 +28,7 @@ public class GameScreen implements Screen {
     private int life;
     private int stamina;
     private float staminaRecoveryTimer;
-    private Array<Enemy> enemies; //To store enemies generated
+    private Array<Enemy> enemies; // To store enemies generated
     private final int CELL_SIZE = 32; // Size of each cell
     private final int WORLD_WIDTH = 13 * CELL_SIZE; // 13 columns
     private final int WORLD_HEIGHT = 20 * CELL_SIZE; // 20 rows
@@ -65,11 +65,6 @@ public class GameScreen implements Screen {
 
         enemies.add(new Enemy(enemyTexture, x, WORLD_HEIGHT, speed));
     }
-
-
-
-
-
 
     @Override
     public void show() {
@@ -122,15 +117,31 @@ public class GameScreen implements Screen {
             if (enemy.isOutOfScreen()) {
                 enemiesToRemove.add(enemy);
             }
+
+            // Check for collision with the player
+            if (isCollision(playerX * CELL_SIZE + PLAYER_OFFSET, playerY * CELL_SIZE + PLAYER_OFFSET, PLAYER_SIZE, enemy.getX(), enemy.getY(), enemy.getSize())) {
+                life--; // Decrease life by 1
+                enemiesToRemove.add(enemy); // Remove the enemy after collision
+                if (life <= 0) {
+                    // Handle game over logic if needed
+                }
+            }
         }
 
-        // Remove enemies that have fallen off the screen
+        // Remove enemies that have fallen off the screen or collided with the player
         enemies.removeAll(enemiesToRemove, true);
 
         // Spawn new enemies periodically
         if (Math.random() < 0.03) {
             spawnEnemy();
         }
+    }
+
+    private boolean isCollision(float playerX, float playerY, float playerSize, float enemyX, float enemyY, float enemySize) {
+        return playerX < enemyX + enemySize &&
+               playerX + playerSize > enemyX &&
+               playerY < enemyY + enemySize &&
+               playerY + playerSize > enemyY;
     }
 
     @Override
@@ -170,8 +181,6 @@ public class GameScreen implements Screen {
 
         // Recover stamina over time
         recoverStamina(delta);
-        
-     
     }
 
     // Method to draw tiles based on their positions
@@ -230,27 +239,27 @@ public class GameScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.K)) moveTo(12);
     }
 
-        private void moveTo(int index) {
-            int newPlayerX = keyPositions[index][0];
-            int newPlayerY = keyPositions[index][1];
+    private void moveTo(int index) {
+        int newPlayerX = keyPositions[index][0];
+        int newPlayerY = keyPositions[index][1];
 
-            int distanceX = Math.abs(newPlayerX - playerX);
+        int distanceX = Math.abs(newPlayerX - playerX);
 
-            int requiredStamina = 0;
-            if (distanceX == 1) {
-                requiredStamina = 5;
-            } else if (distanceX == 2) {
-                requiredStamina = 10;
-            } else if (distanceX >= 3) {
-                requiredStamina = 20;
-            }
-
-            if (stamina >= requiredStamina) {
-                playerX = newPlayerX;
-                playerY = newPlayerY;
-                stamina = Math.max(0, stamina - requiredStamina);
-            }
+        int requiredStamina = 0;
+        if (distanceX == 1) {
+            requiredStamina = 5;
+        } else if (distanceX == 2) {
+            requiredStamina = 10;
+        } else if (distanceX >= 3) {
+            requiredStamina = 20;
         }
+
+        if (stamina >= requiredStamina) {
+            playerX = newPlayerX;
+            playerY = newPlayerY;
+            stamina = Math.max(0, stamina - requiredStamina);
+        }
+    }
 
     private void recoverStamina(float delta) {
         staminaRecoveryTimer += delta;
@@ -259,9 +268,6 @@ public class GameScreen implements Screen {
             staminaRecoveryTimer = 0;
         }
     }
-    
- // Method to handle collision between player and enemies
-   
 
     @Override
     public void resize(int width, int height) {

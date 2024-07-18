@@ -18,7 +18,7 @@ public class Enemy {
     }
 
     public void update(float delta) {
-        y -= (speed * TILE_SIZE) * delta; 
+        y -= (speed * TILE_SIZE) * delta;
     }
 
     public void render(SpriteBatch batch) {
@@ -29,12 +29,19 @@ public class Enemy {
         return y;
     }
 
+    public float getX() {
+        return x;
+    }
+
+    public float getSize() {
+        return TILE_SIZE;
+    }
+
     // Method to check if enemy is out of screen
     public boolean isOutOfScreen() {
         return y + TILE_SIZE < 0;
     }
-    
-    
+
     public void dispose() {
         texture.dispose();
     }
