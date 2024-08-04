@@ -7,9 +7,11 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.Game;
 
 public class MyGame extends Game {
-    @Override
+	
+	
+	@Override
     public void create() {
-        this.setScreen(new GameScreen());
+        setScreen(new MainMenu(this)); // Set the initial screen to MainMenu
     }
 
     @Override

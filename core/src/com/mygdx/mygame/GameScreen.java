@@ -3,6 +3,8 @@ package com.mygdx.mygame;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -15,7 +17,8 @@ import com.badlogic.gdx.utils.Array;
 import java.util.Iterator;
 
 public class GameScreen implements Screen {
-    private SpriteBatch batch;
+	//Declaring variables
+	private SpriteBatch batch;
     private Texture cellTexture;
     private Texture playerTexture;
     private Texture specialTileTexture;
@@ -34,6 +37,9 @@ public class GameScreen implements Screen {
     private final int WORLD_HEIGHT = 20 * CELL_SIZE; // 20 rows
     private final int PLAYER_SIZE = 20; // New size for the player
     private final int PLAYER_OFFSET = (CELL_SIZE - PLAYER_SIZE) / 2; // Offset to center the player in the tile
+    private Music backgroundMusic; // For background music
+    private Sound soundC, soundCSharp, soundD, soundDSharp, soundE, soundF, soundFSharp, soundG, soundGSharp, soundA, soundASharp, soundB, soundC2; // For key sounds
+
 
     // Positions for the player to move to, corresponding to each key
     private final int[][] keyPositions = {
@@ -103,6 +109,26 @@ public class GameScreen implements Screen {
         // Initialize enemies
         enemies = new Array<>();
         spawnEnemy();
+        
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("CosmoMusicBackground.mp3"));
+        backgroundMusic.setLooping(true); // Loop the music
+        backgroundMusic.play(); // Start playing the music
+
+        // Initialize sound effects
+        soundC = Gdx.audio.newSound(Gdx.files.internal("C.mp3"));
+        soundCSharp = Gdx.audio.newSound(Gdx.files.internal("CSharp.mp3"));
+        soundD = Gdx.audio.newSound(Gdx.files.internal("D.mp3"));
+        soundDSharp = Gdx.audio.newSound(Gdx.files.internal("DSharp.mp3"));
+        soundE = Gdx.audio.newSound(Gdx.files.internal("E.mp3"));
+        soundF = Gdx.audio.newSound(Gdx.files.internal("F.mp3"));
+        soundFSharp = Gdx.audio.newSound(Gdx.files.internal("FSharp.mp3"));
+        soundG = Gdx.audio.newSound(Gdx.files.internal("G.mp3"));
+        soundGSharp = Gdx.audio.newSound(Gdx.files.internal("GSharp.mp3"));
+        soundA = Gdx.audio.newSound(Gdx.files.internal("A.mp3"));
+        soundASharp = Gdx.audio.newSound(Gdx.files.internal("ASharp.mp3"));
+        soundB = Gdx.audio.newSound(Gdx.files.internal("B.mp3"));
+        soundC2 = Gdx.audio.newSound(Gdx.files.internal("C2.mp3"));
+
     }
 
     private void updateEnemies(float delta) {
@@ -224,19 +250,103 @@ public class GameScreen implements Screen {
         int oldPlayerX = playerX;
         int oldPlayerY = playerY;
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.A)) moveTo(0);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.W)) moveTo(1);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.S)) moveTo(2);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) moveTo(3);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.D)) moveTo(4);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.F)) moveTo(5);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.T)) moveTo(6);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.G)) moveTo(7);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.Y)) moveTo(8);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.H)) moveTo(9);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.U)) moveTo(10);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.J)) moveTo(11);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.K)) moveTo(12);
+     // Check for key presses and play corresponding sounds
+        if (Gdx.input.isKeyJustPressed(Input.Keys.A)) {
+            if (canMoveTo(0)) {
+                moveTo(0);
+                soundC.play();
+            }
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
+            if (canMoveTo(1)) {
+                moveTo(1);
+                soundCSharp.play();
+            }
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.S)) {
+            if (canMoveTo(2)) {
+                moveTo(2);
+                soundD.play();
+            }
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+            if (canMoveTo(3)) {
+                moveTo(3);
+                soundDSharp.play();
+            }
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.D)) {
+            if (canMoveTo(4)) {
+                moveTo(4);
+                soundE.play();
+            }
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
+            if (canMoveTo(5)) {
+                moveTo(5);
+                soundF.play();
+            }
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.T)) {
+            if (canMoveTo(6)) {
+                moveTo(6);
+                soundFSharp.play();
+            }
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.G)) {
+            if (canMoveTo(7)) {
+                moveTo(7);
+                soundG.play();
+            }
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.Y)) {
+            if (canMoveTo(8)) {
+                moveTo(8);
+                soundGSharp.play();
+            }
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.H)) {
+            if (canMoveTo(9)) {
+                moveTo(9);
+                soundA.play();
+            }
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.U)) {
+            if (canMoveTo(10)) {
+                moveTo(10);
+                soundASharp.play();
+            }
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.J)) {
+            if (canMoveTo(11)) {
+                moveTo(11);
+                soundB.play();
+            }
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.K)) {
+            if (canMoveTo(12)) {
+                moveTo(12);
+                soundC2.play();
+            }
+        }
+    }
+
+    private boolean canMoveTo(int index) {
+        int newPlayerX = keyPositions[index][0];
+        int newPlayerY = keyPositions[index][1];
+
+        int distanceX = Math.abs(newPlayerX - playerX);
+
+        int requiredStamina = 0;
+        if (distanceX == 1) {
+            requiredStamina = 5;
+        } else if (distanceX == 2) {
+            requiredStamina = 10;
+        } else if (distanceX >= 3) {
+            requiredStamina = 20;
+        }
+
+        return stamina >= requiredStamina;
     }
 
     private void moveTo(int index) {
@@ -284,7 +394,8 @@ public class GameScreen implements Screen {
     public void hide() {}
 
     @Override
-    public void dispose() {
+    public void dispose() { // This method is very important. It frees up memory when an object/method/texture/etc. is no longer needed.
+
         batch.dispose();
         cellTexture.dispose();
         playerTexture.dispose();
@@ -295,5 +406,21 @@ public class GameScreen implements Screen {
         for (Enemy enemy : enemies) {
             enemy.dispose();
         }
+        
+        // Dispose of music and sound effects
+        backgroundMusic.dispose();
+        soundC.dispose();
+        soundCSharp.dispose();
+        soundD.dispose();
+        soundDSharp.dispose();
+        soundE.dispose();
+        soundF.dispose();
+        soundFSharp.dispose();
+        soundG.dispose();
+        soundGSharp.dispose();
+        soundA.dispose();
+        soundASharp.dispose();
+        soundB.dispose();
+        soundC2.dispose();
     }
 }
