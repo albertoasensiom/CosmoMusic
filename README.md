@@ -1,4 +1,6 @@
-```markdown
+<p align="center">
+  <img src="CosmoMusic2.jpg" alt="Cosmo Music">
+</p>
 # Cosmo Music - README
 
 ## Overview
@@ -55,4 +57,3 @@ This project is licensed under the MIT License. Feel free to use and modify the 
 ---
 
 Enjoy exploring the musical world of Cosmo Music and watch for future updates that will expand its features and gameplay!
-```
